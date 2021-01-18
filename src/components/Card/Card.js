@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 export default class Card extends Component {
   static defaultProps = {
     release_date: '',
-    overview: 'no overview for this film',
+    overview: 'Sorry, we have no overview for this film in database',
     original_title: 'No title in base',
     poster_path: './images/notfound.jpg',
     genre_ids: [],
@@ -13,7 +13,7 @@ export default class Card extends Component {
 
   static propTypes = {
     original_title: PropTypes.string,
-    release_date: PropTypes.number,
+    release_date: PropTypes.string,
     overview: PropTypes.string,
     poster_path: PropTypes.string,
     genre_ids: PropTypes.arrayOf(PropTypes.number),
