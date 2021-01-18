@@ -1,12 +1,23 @@
 import React, { Component } from 'react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
+import PropTypes from 'prop-types';
 
 export default class Card extends Component {
   static defaultProps = {
     release_date: '',
     overview: 'no overview for this film',
+    original_title: 'No title in base',
+    poster_path: './images/notfound.jpg',
+    genre_ids: [],
   };
-  static propTypes = {};
+
+  static propTypes = {
+    original_title: PropTypes.string,
+    release_date: PropTypes.number,
+    overview: PropTypes.string,
+    poster_path: PropTypes.string,
+    genre_ids: PropTypes.arrayOf(PropTypes.number),
+  };
 
   state = {};
 

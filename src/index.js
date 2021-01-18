@@ -1,10 +1,9 @@
-import { render } from '@testing-library/react';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import CardList from './components/CardList';
-import MoviedbService from './components/MoviedbService';
 import { Alert, Spin } from 'antd';
 import { VideoCameraFilled, CloseCircleOutlined } from '@ant-design/icons';
+import CardList from './components/CardList';
+import MoviedbService from './components/MoviedbService';
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
@@ -18,17 +17,17 @@ const ret = new MoviedbService();
 
 class App extends Component {
   state = {
-    films: [],
     isLoading: true,
     error: false,
   };
+
+  moviedbService = new MoviedbService();
 
   constructor() {
     super();
     this.updateCard();
   }
 
-  moviedbService = new MoviedbService();
   onFilmsLoaded = (body) => {
     this.setState({
       films: body.results,

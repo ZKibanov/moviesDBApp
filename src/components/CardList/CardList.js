@@ -12,6 +12,9 @@ function CardList(props) {
   console.log(films);
   return <ul className="card-list">{[cardsArray]}</ul>;
 }
+CardList.defaultProps = {
+  films: [],
+};
 
 CardList.propTypes = {
   films: propTypes.arrayOf(propTypes.object),
