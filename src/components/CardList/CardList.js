@@ -1,14 +1,19 @@
-import React, { Component } from 'react';
+import React from 'react';
+import propTypes from 'prop-types';
 import Card from '../Card';
+import 'antd/dist/antd.css';
 
-export default class CardList extends Component {
-  render() {
-    const { films } = this.props;
-    const cardsArray = films.map((item) => {
-      const { id, ...itemProps } = item;
-      return <Card key={id} {...itemProps} />;
-    });
-
-    return <ul className="card-list">{[cardsArray]}</ul>;
-  }
+function CardList(props) {
+  const { films } = props;
+  const cardsArray = films.map((item) => {
+    const { id, ...itemProps } = item;
+    return <Card key={id} {...itemProps} />;
+  });
+  console.log(films);
+  return <ul className="card-list">{[cardsArray]}</ul>;
 }
+
+CardList.propTypes = {
+  films: propTypes.arrayOf(propTypes.object),
+};
+export default CardList;

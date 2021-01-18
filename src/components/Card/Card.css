@@ -1,73 +1,70 @@
 @font-face {
-    font-family: "Inter";
-    src: local("Inter"),
-    url("./fonts/Inter-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-style: normal;
+  font-family: 'Inter';
+  src: local('Inter'), url('./fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: "Inter";
-    src: local("Inter"),
-    url("./fonts/Inter-Bold.woff2") format("woff2");
-    font-weight: 700;
-    font-style: bold;
+  font-family: 'Inter';
+  src: local('Inter'), url('./fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: bold;
 }
 
 @font-face {
-    font-family: "Inter";
-    src: local("Inter"),
-    url("./fonts/Inter-Thin.woff2") format("woff2");
-    font-weight: 100;
-    font-style: thin;
+  font-family: 'Inter';
+  src: local('Inter'), url('./fonts/Inter-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: thin;
 }
 
 .card {
-background-color: #FFF;
-max-width: 454px;
-max-height: 281px;
-display: flex;
-flex-direction: row;
-box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.15);
-margin-top:32px;
-margin-right: 36px;
+  background-color: #fff;
+  max-width: 454px;
+  max-height: 281px;
+  display: flex;
+  flex-direction: row;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.15);
+  margin-top: 32px;
+  margin-left: 36px;
 }
 
 .card__date {
-    color:#827E7E;
-    margin: 0;
+  color: #827e7e;
+  margin: 0;
 }
 
 .card__image {
-max-width: 183px;
-height:100%;
+  max-width: 183px;
+  height: 100%;
 }
 
 .card__header {
-    font-family: "Inter";
-    font-weight: 400;
-    font-style: normal;
-    font-size: 20px;
-    margin: 12px 0 7px 0;
-    line-height: 28px;
+  font-family: 'Inter';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  margin: 12px 0 7px 0;
+  line-height: 28px;
 }
 .card__text-area {
-    font-family: "Inter";
-    font-weight: "normal";
-    font-size: 12px;
-    line-height: 22px;
-    padding: 0 20px;
+  font-family: 'Inter';
+  font-weight: 'normal';
+  font-size: 12px;
+  line-height: 22px;
+  padding: 0 20px;
 }
 
 .card__description {
-    margin-top: 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
+  margin-top: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .card__genres {
-    border: 1px solid #D9D9D9;
-    border-radius: 2px;
-    margin-top: 7px;
-    line-height: 14,52px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  margin-top: 7px;
+  line-height: 14, 52px;
 }

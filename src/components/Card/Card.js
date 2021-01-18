@@ -1,48 +1,56 @@
 import React, { Component } from 'react';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 export default class Card extends Component {
-  static defaultProps = {};
+  static defaultProps = {
+    release_date: '',
+    overview: 'no overview for this film',
+  };
+  static propTypes = {};
 
-  constructor() {
-    super();
-  }
+  state = {};
 
   render() {
     const fileSize = 'w500';
-    const { original_title, overview, release_date, poster_path, genre_ids } = this.props;
-    const date = format(new Date(release_date), 'PPP');
+    const {
+      original_title: originalTitle,
+      overview,
+      release_date: releaseDate,
+      poster_path: posterPath,
+      genre_ids: genreIds,
+    } = this.props;
+    const date = releaseDate ? format(new Date(releaseDate), 'PPP') : 'no information';
 
     let pathToPosters;
-    if (poster_path) {
-      pathToPosters = `http://image.tmdb.org/t/p/${fileSize}${poster_path}`;
+
+    if (posterPath) {
+      pathToPosters = `http://image.tmdb.org/t/p/${fileSize}${posterPath}`;
     } else {
       pathToPosters = './images/notfound.jpg';
     }
 
     function stringSizeControl(str) {
-      if (str.length >= 210) {
-        let res = str.substr(0, 210);
-        const whitespaceIndex = res.lastIndexOf(' ');
-        res = res.substr(0, whitespaceIndex) + ' ...';
-        return res;
-      } else {
-        return str;
+      const string = !str ? 'Sorry, we have no overview for this film in database' : str;
+      if (string.length >= 210) {
+        let resultString = string.substr(0, 210);
+        const whitespaceIndex = resultString.lastIndexOf(' ');
+        resultString = `${resultString.substr(0, whitespaceIndex)} ...`;
+        return resultString;
       }
+      return string;
     }
 
-    let filmDescripton = stringSizeControl(overview);
+    const filmDescripton = stringSizeControl(overview);
 
-    console.log(pathToPosters);
     return (
       <div className="card">
         <div>
-          <img className="card__image" src={pathToPosters}></img>
+          <img className="card__image" src={pathToPosters} alt="film poster" />
         </div>
         <div className="card__text-area">
-          <h5 className="card__header">{original_title}</h5>
+          <h5 className="card__header">{originalTitle}</h5>
           <p className="card__date">{date}</p>
-          <span className="card__genres">{genre_ids}</span>
+          <span className="card__genres">{genreIds}</span>
           <p className="card__description">{filmDescripton}</p>
         </div>
       </div>
