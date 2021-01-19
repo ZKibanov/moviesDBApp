@@ -21,7 +21,7 @@
 
 .card {
   background-color: #fff;
-  max-width: 454px;
+  width: 454px;
   max-height: 281px;
   display: flex;
   flex-direction: row;
