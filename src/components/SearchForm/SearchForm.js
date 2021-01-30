@@ -3,10 +3,6 @@ import { debounce } from 'lodash';
 import propTypes from 'prop-types';
 
 export default class NewTaskForm extends Component {
-  state = {
-    label: '',
-  };
-
   static defaultProps = {
     onSearch: () => {},
   };
@@ -16,6 +12,13 @@ export default class NewTaskForm extends Component {
   };
 
   delayedOnLabelChange = debounce((request) => this.onChange(request), 1500);
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      label: '',
+    };
+  }
 
   onChange = (ev) => {
     const { onSearch } = this.props;
