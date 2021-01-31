@@ -8,24 +8,24 @@ import { MoviedbServiceConsumer } from '../../services/MoviedbServiceContext';
 import 'antd/dist/antd.css';
 
 function CardList(props) {
-  const { films, totalResults, onPageNumberChange, page, sessionId } = props;
+  const { films, totalResults, onPageNumberChange, page, sessionId, updateRated } = props;
   const onChange = (newPageNumber) => {
     onPageNumberChange(null, newPageNumber);
   };
 
-  const getGenres = () => {
-    const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-    const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
-    <MoviedbServiceConsumer>
-      {({ getResource }) => {
-        console.log('whaaat');
-        getResource(genresUrl).then((body) => console.log(body));
-      }}
-    </MoviedbServiceConsumer>;
-    console.log(genresUrl);
-  };
+  // const getGenres = () => {
+  //   const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
+  //   const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
+  //   <MoviedbServiceConsumer>
+  //     {({ getResource }) => {
+  //       console.log('whaaat');
+  //       getResource(genresUrl).then((body) => console.log(body));
+  //     }}
+  //   </MoviedbServiceConsumer>;
+  //   console.log(genresUrl);
+  // };
 
-  getGenres();
+  // getGenres();
 
   if (films.length === 0) {
     return (
@@ -37,7 +37,7 @@ function CardList(props) {
   }
   const cardsArray = films.map((item) => {
     const { id, ...itemProps } = item;
-    return <Card key={id} filmID={id} sessionId={sessionId} {...itemProps} />;
+    return <Card key={id} filmID={id} sessionId={sessionId} updateRated={updateRated} {...itemProps} />;
   });
 
   return (

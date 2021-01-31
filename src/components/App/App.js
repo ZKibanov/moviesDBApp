@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Alert, Spin } from 'antd';
 import { VideoCameraFilled, CloseCircleOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { MoviedbServiceProvider } from '../../services/MoviedbServiceContext';
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../MoviedbService';
@@ -35,7 +34,9 @@ export default class App extends Component {
       guestSessionExpiresAt: guestSessionExpiresDate,
       isLoading: false,
       error: false,
+      tab: 'Search',
     };
+    this.getRatedFilms(guestSessionId);
   }
 
   onFilmsLoaded = (body) => {
@@ -49,14 +50,19 @@ export default class App extends Component {
   };
 
   onSearch = (text, pageNumber = 1) => {
-    const { query } = this.state;
+    const { query, tab, guestSessionId } = this.state;
     const actualQuery = text || query;
     if (text) {
       this.setState({
         query: text,
       });
     }
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${actualQuery}&page=${pageNumber}`;
+    let url;
+    if (tab === 'Search') {
+      url = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${actualQuery}&page=${pageNumber}`;
+    } else {
+      url = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
+    }
     this.updateCard(url);
   };
 
@@ -80,12 +86,16 @@ export default class App extends Component {
       .catch((err) => this.onError(err));
   }
 
+  getRatedFilms(guestSessionId, pageNumber = 1) {
+    const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
+    this.moviedbService.getResource(sessionURL).then((body) => this.setState({ rated: body }));
+  }
+
   componentDidMount() {
-    const { guestSessionExpiresAt } = this.state;
+    const { guestSessionExpiresAt, guestSessionId } = this.state;
     if (guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
       console.log(this.sessServ.guestSessionIsValid(guestSessionExpiresAt));
     } else {
-      console.log(guestSessionExpiresAt);
       this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
     }
   }
@@ -97,24 +107,31 @@ export default class App extends Component {
 
   chooseTab = (ev) => {
     const tab = ev.target.textContent;
-    if (tab === 'Rated') {
-      console.log('ioioi');
+    if (tab === 'Search') {
+      this.setState({
+        query: null,
+        films: null,
+      });
+    } else {
+      this.onFilmsLoaded(this.state.rated);
     }
     this.setState({ tab: tab });
     console.log(ev.target.textContent);
   };
 
+  updateRatedFilms = () => {
+    const { guestSessionId } = this.state;
+    this.getRatedFilms(guestSessionId);
+  };
+
   render() {
     console.log('render');
-    const { films, isLoading, error, totalResults, page, guestSessionId } = this.state;
-
-    const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
-    this.moviedbService.getResource(sessionURL).then((body) => console.log(body));
-
+    const { films, isLoading, error, totalResults, page, guestSessionId, tab } = this.state;
     const hasData = !(isLoading || error) && films;
     const spinner = isLoading ? <Spin size="large" /> : null;
     const content = hasData ? (
       <CardList
+        updateRated={this.updateRatedFilms}
         films={films}
         totalResults={totalResults}
         page={page}
@@ -122,6 +139,13 @@ export default class App extends Component {
         sessionId={guestSessionId}
       />
     ) : null;
+
+    let searchForm;
+    if (tab === 'Search') {
+      searchForm = <SearchForm onSearch={this.onSearch} />;
+    } else {
+      searchForm = null;
+    }
 
     let alertIcon;
     let alertType;
@@ -138,24 +162,22 @@ export default class App extends Component {
 
     return (
       <div>
-        <MoviedbServiceProvider value={this.moviedbService}>
-          <header>
-            <nav className="nav">
-              <button className="nav-button nav-button__active" onClick={this.chooseTab}>
-                Search
-              </button>
-              <button className="nav-button" onClick={this.chooseTab}>
-                Rated
-              </button>
-            </nav>
-          </header>
-          <SearchForm onSearch={this.onSearch} />
-          <div className="card-list__container">
-            <Alert closable="true" showIcon="true" icon={alertIcon} message={alertType[0]} type={alertType[1]} />
-            {spinner}
-            {content}
-          </div>
-        </MoviedbServiceProvider>
+        <header>
+          <nav className="nav">
+            <button className="nav-button nav-button__active" onClick={this.chooseTab}>
+              Search
+            </button>
+            <button className="nav-button" onClick={this.chooseTab}>
+              Rated
+            </button>
+          </nav>
+        </header>
+        {searchForm}
+        <div className="card-list__container">
+          <Alert closable="true" showIcon="true" icon={alertIcon} message={alertType[0]} type={alertType[1]} />
+          {spinner}
+          {content}
+        </div>
       </div>
     );
   }

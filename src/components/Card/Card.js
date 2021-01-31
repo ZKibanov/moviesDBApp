@@ -3,8 +3,6 @@ import { format } from 'date-fns';
 import { Rate } from 'antd';
 import PropTypes from 'prop-types';
 import RateFilmService from '../../services/RateService';
-import { MoviedbServiceConsumer } from '../../services/MoviedbServiceContext';
-import MoviedbService from '../MoviedbService';
 
 export default class Card extends Component {
   rateService = new RateFilmService();
@@ -25,15 +23,17 @@ export default class Card extends Component {
     genre_ids: PropTypes.arrayOf(PropTypes.number),
   };
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {};
   }
 
   handleChange = (ev) => {
+    const { filmID, sessionId, updateRated } = this.props;
     this.rateService
-      .rateFilm(ev, this.props.filmID, this.props.sessionId)
-      .then((body) => console.log(body.status_message + ' we have result'));
+      .rateFilm(ev, filmID, sessionId)
+      .then((body) => console.log(body.status_message + ' we have result'))
+      .then(updateRated());
   };
 
   render() {
