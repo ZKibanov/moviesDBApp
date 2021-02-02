@@ -4,17 +4,16 @@ import { VideoCameraFilled, CloseCircleOutlined, ArrowUpOutlined } from '@ant-de
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../MoviedbService';
-import GuestSessionService from '../../services/GuestSessionService/GuestSessionService.js';
+import GuestSessionService from '../../services/GuestSessionService/GuestSessionService';
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
 const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
 const guestSessionIDRequest = `https://api.themoviedb.org/3/authentication/guest_session/new?api_key=${key}`;
-const gSessionUrl = `https://api.themoviedb.org/3/guest_session/1/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
 
 export default class App extends Component {
   moviedbService = new MoviedbService();
+
   sessServ = new GuestSessionService();
 
   constructor() {
@@ -30,21 +29,41 @@ export default class App extends Component {
       guestSessionExpiresDate = localStorage.getItem('guestSessionExpiresAt');
     }
     this.state = {
-      guestSessionId: guestSessionId,
+      guestSessionId,
       guestSessionExpiresAt: guestSessionExpiresDate,
       isLoading: false,
       error: false,
       tab: 'Search',
     };
     this.getRatedFilms(guestSessionId);
+    this.getGenres();
   }
 
-  onFilmsLoaded = (body) => {
-    console.log(body);
+  componentDidMount() {
+    const { guestSessionExpiresAt } = this.state;
+    if (guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
+      console.log(this.sessServ.guestSessionIsValid(guestSessionExpiresAt));
+    } else {
+      this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
+    }
+  }
+
+  componentDidCatch() {
+    console.log('Houston, we have a proplem!');
+    this.setState({ error: true });
+  }
+
+  getGenres() {
+    const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
+    this.moviedbService.getResource(genresUrl).then((body) => this.setState({ genres: body.genres }));
+  }
+
+  onError = (err) => {
+    /* eslint no-console: [0, { allow: ["warn", "error"] }] */
+    // custom console
+    console.log(err.message);
     this.setState({
-      page: body.page,
-      totalResults: body.total_results,
-      films: body.results,
+      error: true,
       isLoading: false,
     });
   };
@@ -66,14 +85,69 @@ export default class App extends Component {
     this.updateCard(url);
   };
 
-  onError = (err) => {
-    /* eslint no-console: [0, { allow: ["warn", "error"] }] */
-    // custom console
-    console.log(err.message);
+  getRatedFilms(guestSessionId) {
+    let pageNumber = 1;
+    const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
+    this.moviedbService.getResource(sessionURL).then((body) => {
+      if (body.total_pages === 1) {
+        this.setState({ rated: body.results });
+      } else {
+        console.log(body.total_pages);
+        const promiseArray = [];
+        let i = 1;
+        while (i <= body.total_pages) {
+          pageNumber = i;
+          promiseArray.push(
+            this.moviedbService.getResource(
+              `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`
+            )
+          );
+          i += 1;
+        }
+        Promise.all(promiseArray).then((arrOfResults) => {
+          const ratedFilmsArrray = [];
+          arrOfResults.forEach((el) => ratedFilmsArrray.push(...el.results));
+          this.setState({ rated: ratedFilmsArrray });
+        });
+      }
+    });
+  }
+
+  updateRatedFilms = (id, rating) => {
+    const { rated } = this.state;
+    const newRatedFilms = [...rated];
+    newRatedFilms.push({
+      id,
+      rating,
+    });
+    this.setState({ rated: newRatedFilms });
+  };
+
+  onFilmsLoaded = (body) => {
+    console.log(body);
     this.setState({
-      error: true,
+      page: body.page,
+      totalResults: body.total_results,
+      films: body.results,
       isLoading: false,
     });
+  };
+
+  chooseTab = (ev) => {
+    console.log(ev.target);
+    const tab = ev.target.textContent;
+    if (tab === 'Search') {
+      this.setState({
+        query: null,
+        films: null,
+      });
+    } else {
+      const { guestSessionId } = this.state;
+      const ratedFilmsUrl = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
+      this.updateCard(ratedFilmsUrl);
+    }
+    this.setState({ tab });
+    console.log(ev.target.textContent);
   };
 
   updateCard(url) {
@@ -86,52 +160,16 @@ export default class App extends Component {
       .catch((err) => this.onError(err));
   }
 
-  getRatedFilms(guestSessionId, pageNumber = 1) {
-    const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
-    this.moviedbService.getResource(sessionURL).then((body) => this.setState({ rated: body }));
-  }
-
-  componentDidMount() {
-    const { guestSessionExpiresAt, guestSessionId } = this.state;
-    if (guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
-      console.log(this.sessServ.guestSessionIsValid(guestSessionExpiresAt));
-    } else {
-      this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
-    }
-  }
-
-  componentDidCatch() {
-    console.log('Houston, we have a proplem!');
-    this.setState({ error: true });
-  }
-
-  chooseTab = (ev) => {
-    const tab = ev.target.textContent;
-    if (tab === 'Search') {
-      this.setState({
-        query: null,
-        films: null,
-      });
-    } else {
-      this.onFilmsLoaded(this.state.rated);
-    }
-    this.setState({ tab: tab });
-    console.log(ev.target.textContent);
-  };
-
-  updateRatedFilms = () => {
-    const { guestSessionId } = this.state;
-    this.getRatedFilms(guestSessionId);
-  };
-
   render() {
     console.log('render');
-    const { films, isLoading, error, totalResults, page, guestSessionId, tab } = this.state;
+    const { films, isLoading, error, totalResults, page, guestSessionId, tab, genres, rated } = this.state;
     const hasData = !(isLoading || error) && films;
     const spinner = isLoading ? <Spin size="large" /> : null;
     const content = hasData ? (
       <CardList
-        updateRated={this.updateRatedFilms}
+        updateRatedFilms={this.updateRatedFilms}
+        genres={genres}
+        rated={rated}
         films={films}
         totalResults={totalResults}
         page={page}
@@ -141,9 +179,15 @@ export default class App extends Component {
     ) : null;
 
     let searchForm;
+    let tabSearchClasses;
+    let tabRatedClasses;
     if (tab === 'Search') {
+      tabSearchClasses = 'nav-button nav-button__active';
+      tabRatedClasses = 'nav-button';
       searchForm = <SearchForm onSearch={this.onSearch} />;
     } else {
+      tabSearchClasses = 'nav-button';
+      tabRatedClasses = 'nav-button nav-button__active';
       searchForm = null;
     }
 
@@ -164,10 +208,10 @@ export default class App extends Component {
       <div>
         <header>
           <nav className="nav">
-            <button className="nav-button nav-button__active" onClick={this.chooseTab}>
+            <button type="button" className={tabSearchClasses} onClick={this.chooseTab}>
               Search
             </button>
-            <button className="nav-button" onClick={this.chooseTab}>
+            <button type="button" className={tabRatedClasses} onClick={this.chooseTab}>
               Rated
             </button>
           </nav>

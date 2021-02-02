@@ -12,7 +12,12 @@ export default class Card extends Component {
     overview: 'Sorry, we have no overview for this film in database',
     original_title: 'No title in base',
     poster_path: './images/notfound.jpg',
-    genre_ids: [],
+    cardGenres: [],
+    filmID: null,
+    sessionId: null,
+    updateRatedFilms: () => {},
+    vote_average: 0,
+    value: 0,
   };
 
   static propTypes = {
@@ -20,7 +25,12 @@ export default class Card extends Component {
     release_date: PropTypes.string,
     overview: PropTypes.string,
     poster_path: PropTypes.string,
-    genre_ids: PropTypes.arrayOf(PropTypes.number),
+    cardGenres: PropTypes.arrayOf(PropTypes.object),
+    filmID: PropTypes.number,
+    sessionId: PropTypes.string,
+    updateRatedFilms: PropTypes.func,
+    vote_average: PropTypes.number,
+    value: PropTypes.number,
   };
 
   constructor() {
@@ -29,11 +39,9 @@ export default class Card extends Component {
   }
 
   handleChange = (ev) => {
-    const { filmID, sessionId, updateRated } = this.props;
-    this.rateService
-      .rateFilm(ev, filmID, sessionId)
-      .then((body) => console.log(body.status_message + ' we have result'))
-      .then(updateRated());
+    const { filmID, sessionId, updateRatedFilms } = this.props;
+    updateRatedFilms(filmID, ev);
+    this.rateService.rateFilm(ev, filmID, sessionId);
   };
 
   render() {
@@ -41,10 +49,11 @@ export default class Card extends Component {
     const {
       original_title: originalTitle,
       overview,
+      value,
       release_date: releaseDate,
       poster_path: posterPath,
       vote_average: vote,
-      genre_ids: genreIds,
+      cardGenres,
     } = this.props;
     const date = releaseDate ? format(new Date(releaseDate), 'PPP') : 'no information';
 
@@ -56,10 +65,24 @@ export default class Card extends Component {
       pathToPosters = './images/notfound.jpg';
     }
 
-    function stringSizeControl(str) {
+    function stringSizeControl(str, title, cardGenresArray) {
+      console.log(`${title} ${title.length}`);
+      let expectedStringLength = 235;
+      if (title.length >= 17) {
+        expectedStringLength -= 65;
+      } else if (title.length >= 34) {
+        expectedStringLength -= 130;
+      } else if (title.length >= 45) {
+        expectedStringLength -= 160;
+      }
+
+      if (cardGenresArray.length > 3 || (cardGenresArray.length === 3 && cardGenres.includes('Science Fiction'))) {
+        expectedStringLength -= 65;
+      }
+
       const string = !str ? 'Sorry, we have no overview for this film in database' : str;
-      if (string.length >= 210) {
-        let resultString = string.substr(0, 210);
+      if (string.length >= expectedStringLength) {
+        let resultString = string.substr(0, expectedStringLength);
         const whitespaceIndex = resultString.lastIndexOf(' ');
         resultString = `${resultString.substr(0, whitespaceIndex)} ...`;
         return resultString;
@@ -67,7 +90,7 @@ export default class Card extends Component {
       return string;
     }
 
-    const filmDescripton = stringSizeControl(overview);
+    const filmDescripton = stringSizeControl(overview, originalTitle, cardGenres);
     let voteColor;
     if (vote < 3) {
       voteColor = '1';
@@ -78,6 +101,10 @@ export default class Card extends Component {
     } else {
       voteColor = '3';
     }
+
+    const descriptionBlock = <p className="card__description">{filmDescripton}</p>;
+
+    const arrayOfCardGenres = cardGenres.map((genre) => <span className="card__genres">{genre}</span>);
     return (
       <div className="card">
         <div>
@@ -91,9 +118,9 @@ export default class Card extends Component {
             </span>
           </div>
           <p className="card__date">{date}</p>
-          <span className="card__genres">{genreIds}</span>
-          <p className="card__description">{filmDescripton}</p>
-          <Rate allowHalf count="10" value={vote} onChange={this.handleChange} />
+          <p className="card__genres--wrap">{arrayOfCardGenres}</p>
+          {descriptionBlock}
+          <Rate allowHalf count="10" defaultValue={0} value={value} onChange={this.handleChange} />
         </div>
       </div>
     );

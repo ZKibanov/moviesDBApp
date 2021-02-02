@@ -1,6 +1,14 @@
-.search-form {
-  width: 1010px;
-  margin: 0 auto 32px auto;
+@media (min-width: 20px) and (max-width: 1009px) {
+  .search-form {
+    width: 90%;
+    margin: 0 auto 32px auto;
+  }
+}
+@media (min-width: 1010px) {
+  .search-form {
+    width: 1010px;
+    margin: 0 auto 32px auto;
+  }
 }
 
 .search-form__input {

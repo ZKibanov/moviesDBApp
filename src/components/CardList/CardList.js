@@ -3,29 +3,14 @@ import propTypes from 'prop-types';
 import { Pagination } from 'antd';
 import { FrownOutlined } from '@ant-design/icons';
 import Card from '../Card';
-import { MoviedbServiceConsumer } from '../../services/MoviedbServiceContext';
 
 import 'antd/dist/antd.css';
 
 function CardList(props) {
-  const { films, totalResults, onPageNumberChange, page, sessionId, updateRated } = props;
+  const { films, totalResults, onPageNumberChange, page, sessionId, genres, rated, updateRatedFilms } = props;
   const onChange = (newPageNumber) => {
     onPageNumberChange(null, newPageNumber);
   };
-
-  // const getGenres = () => {
-  //   const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-  //   const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
-  //   <MoviedbServiceConsumer>
-  //     {({ getResource }) => {
-  //       console.log('whaaat');
-  //       getResource(genresUrl).then((body) => console.log(body));
-  //     }}
-  //   </MoviedbServiceConsumer>;
-  //   console.log(genresUrl);
-  // };
-
-  // getGenres();
 
   if (films.length === 0) {
     return (
@@ -36,8 +21,32 @@ function CardList(props) {
     );
   }
   const cardsArray = films.map((item) => {
-    const { id, ...itemProps } = item;
-    return <Card key={id} filmID={id} sessionId={sessionId} updateRated={updateRated} {...itemProps} />;
+    const { id, value, genre_ids: genreIds, ...itemProps } = item;
+    let ratedValue;
+    for (let i = 0; i < rated.length; i += 1) {
+      if (id === rated[i].id) {
+        ratedValue = rated[i].rating;
+      }
+    }
+    const cardGenres = [];
+    genreIds.forEach((itemGenre) => {
+      for (let i = 0; i < genres.length; i += 1) {
+        if (itemGenre === genres[i].id) {
+          cardGenres.push(genres[i].name);
+        }
+      }
+    });
+    return (
+      <Card
+        key={id}
+        filmID={id}
+        value={ratedValue}
+        sessionId={sessionId}
+        updateRatedFilms={updateRatedFilms}
+        cardGenres={cardGenres}
+        {...itemProps}
+      />
+    );
   });
 
   return (
@@ -63,6 +72,10 @@ CardList.defaultProps = {
   onPageNumberChange: 1,
   page: 1,
   onChange: () => {},
+  updateRatedFilms: () => {},
+  sessionId: null,
+  genres: [],
+  rated: 0,
 };
 
 CardList.propTypes = {
@@ -71,5 +84,9 @@ CardList.propTypes = {
   page: propTypes.number,
   onChange: propTypes.func,
   films: propTypes.arrayOf(propTypes.object),
+  sessionId: propTypes.string,
+  genres: propTypes.arrayOf(propTypes.object),
+  rated: propTypes.arrayOf(propTypes.object),
+  updateRatedFilms: propTypes.func,
 };
 export default CardList;

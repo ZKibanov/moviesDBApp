@@ -24,7 +24,7 @@ export default class NewTaskForm extends Component {
     const { onSearch } = this.props;
     const label = ev.target.value;
     ev.preventDefault();
-    if (label[0] !== ' ') {
+    if (label && label[0] !== ' ') {
       onSearch(label);
     }
   };

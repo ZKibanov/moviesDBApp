@@ -13,7 +13,6 @@ export default class GuestSessionService {
         localStorage.setItem('guestSessionExpiresAt', date);
       })
       .catch((err) => {
-        // custom console
         console.error(err.message);
       });
   }

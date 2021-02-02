@@ -50,12 +50,12 @@
   font-weight: 400;
   font-style: normal;
   font-size: 20px;
-  margin: 12px auto 7px 0;
+  margin: 12px auto 0 0;
   line-height: 28px;
 }
 
 .card__header-rating {
-  margin: 12px 9px 0 0;
+  margin: 8px -8px 0 0;
   height: 30px;
   width: 30px;
   text-align: center;
@@ -81,21 +81,38 @@
   font-family: 'Inter';
   font-weight: 'normal';
   font-size: 12px;
-  line-height: 22px;
+  line-height: 20px;
   padding: 0 20px;
+  overflow-block: hidden;
 }
 
 .card__description {
-  margin-top: 0;
+  margin-top: -5px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .card__genres {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
   border: 1px solid #d9d9d9;
   border-radius: 2px;
-  margin-top: 7px;
-  line-height: 14, 52px;
+  margin-top: 5px;
+  margin-right: 8px;
+  color: rgba(0, 0, 0, 0.65);
+  padding: 2px 4px 3px 5px;
+  white-space: nowrap;
+  max-width: fit-content;
+}
+
+.card__genres--wrap {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  max-width: 255px;
 }
 
 .ant-rate {

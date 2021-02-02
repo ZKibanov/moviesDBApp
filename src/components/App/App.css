@@ -22,6 +22,7 @@
 .ant-pagination {
   margin-top: 36px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .ant-pagination-item-active {
@@ -37,7 +38,6 @@
   width: 140px;
   text-align: center;
   margin: 20px auto;
-  border-bottom: 2px solid #d9d9d9;
   display: flex;
   justify-content: space-between;
 }
@@ -61,12 +61,6 @@
 
 .nav-button__active {
   background-image: url('./images/R3.svg');
-  background-position: bottom -2px right 0px;
+  background-position: bottom 0px right 0px;
   background-repeat: no-repeat;
-}
-
-.nav-button:active {
-  background-color: #333;
-  border-color: #333;
-  color: #eee;
 }

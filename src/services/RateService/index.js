@@ -1,3 +1,3 @@
-import RateFilmService from './rate-film-service.js';
+import RateFilmService from './rate-film-service';
 
 export default RateFilmService;
