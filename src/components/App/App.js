@@ -20,7 +20,7 @@ export default class App extends Component {
     super();
     let guestSessionId;
     let guestSessionExpiresDate;
-    if (localStorage.getItem('guestSessionId') === undefined) {
+    if (localStorage.getItem('guestSessionId') === null) {
       this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
     } else {
       guestSessionId = localStorage.getItem('guestSessionId');
@@ -69,6 +69,7 @@ export default class App extends Component {
     const actualQuery = text || query;
     if (text) {
       this.setState({
+        error: false,
         query: text,
       });
     }

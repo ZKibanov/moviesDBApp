@@ -68,7 +68,7 @@ export default class Card extends Component {
     }
 
     function stringSizeControl(cardDescription, title, cardGenresArray) {
-      let expectedStringLength = 265;
+      let expectedStringLength = 245;
       if (title.length >= 17 && title.length < 34) {
         expectedStringLength -= 65;
       } else if (title.length >= 34 && title.length < 45) {
