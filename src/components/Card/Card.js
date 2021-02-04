@@ -25,7 +25,7 @@ export default class Card extends Component {
     release_date: PropTypes.string,
     overview: PropTypes.string,
     poster_path: PropTypes.string,
-    cardGenres: PropTypes.arrayOf(PropTypes.object),
+    cardGenres: PropTypes.arrayOf(PropTypes.string),
     filmID: PropTypes.number,
     sessionId: PropTypes.string,
     updateRatedFilms: PropTypes.func,
@@ -40,8 +40,10 @@ export default class Card extends Component {
 
   handleChange = (ev) => {
     const { filmID, sessionId, updateRatedFilms } = this.props;
-    updateRatedFilms(filmID, ev);
-    this.rateService.rateFilm(ev, filmID, sessionId);
+    if (ev) {
+      updateRatedFilms(filmID, ev);
+      this.rateService.rateFilm(ev, filmID, sessionId);
+    }
   };
 
   render() {
@@ -65,22 +67,21 @@ export default class Card extends Component {
       pathToPosters = './images/notfound.jpg';
     }
 
-    function stringSizeControl(str, title, cardGenresArray) {
-      console.log(`${title} ${title.length}`);
-      let expectedStringLength = 235;
-      if (title.length >= 17) {
+    function stringSizeControl(cardDescription, title, cardGenresArray) {
+      let expectedStringLength = 265;
+      if (title.length >= 17 && title.length < 34) {
         expectedStringLength -= 65;
-      } else if (title.length >= 34) {
+      } else if (title.length >= 34 && title.length < 45) {
         expectedStringLength -= 130;
       } else if (title.length >= 45) {
-        expectedStringLength -= 160;
+        expectedStringLength -= 175;
       }
 
       if (cardGenresArray.length > 3 || (cardGenresArray.length === 3 && cardGenres.includes('Science Fiction'))) {
         expectedStringLength -= 65;
       }
 
-      const string = !str ? 'Sorry, we have no overview for this film in database' : str;
+      const string = !cardDescription ? 'Sorry, we have no overview for this film in database' : cardDescription;
       if (string.length >= expectedStringLength) {
         let resultString = string.substr(0, expectedStringLength);
         const whitespaceIndex = resultString.lastIndexOf(' ');
@@ -104,7 +105,11 @@ export default class Card extends Component {
 
     const descriptionBlock = <p className="card__description">{filmDescripton}</p>;
 
-    const arrayOfCardGenres = cardGenres.map((genre) => <span className="card__genres">{genre}</span>);
+    const arrayOfCardGenres = cardGenres.map((genre) => (
+      <span key={genre} className="card__genres">
+        {genre}
+      </span>
+    ));
     return (
       <div className="card">
         <div>

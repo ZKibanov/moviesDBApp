@@ -3,7 +3,6 @@ import propTypes from 'prop-types';
 import { Pagination } from 'antd';
 import { FrownOutlined } from '@ant-design/icons';
 import Card from '../Card';
-
 import 'antd/dist/antd.css';
 
 function CardList(props) {

@@ -5,6 +5,7 @@ import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../MoviedbService';
 import GuestSessionService from '../../services/GuestSessionService/GuestSessionService';
+import { ServiceProvider } from '../../services/ServiceContext/service-context';
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
@@ -18,12 +19,10 @@ export default class App extends Component {
 
   constructor() {
     super();
-    console.log('construct');
     let guestSessionId;
     let guestSessionExpiresDate;
-    if (!localStorage.getItem('guestSessionId')) {
-      guestSessionId = null;
-      guestSessionExpiresDate = null;
+    if (localStorage.getItem('guestSessionId') === undefined) {
+      this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
     } else {
       guestSessionId = localStorage.getItem('guestSessionId');
       guestSessionExpiresDate = localStorage.getItem('guestSessionExpiresAt');
@@ -41,9 +40,7 @@ export default class App extends Component {
 
   componentDidMount() {
     const { guestSessionExpiresAt } = this.state;
-    if (guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
-      console.log(this.sessServ.guestSessionIsValid(guestSessionExpiresAt));
-    } else {
+    if (!guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
       this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
     }
   }
@@ -86,6 +83,9 @@ export default class App extends Component {
   };
 
   getRatedFilms(guestSessionId) {
+    if (!guestSessionId) {
+      return;
+    }
     let pageNumber = 1;
     const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
     this.moviedbService.getResource(sessionURL).then((body) => {
@@ -115,7 +115,7 @@ export default class App extends Component {
 
   updateRatedFilms = (id, rating) => {
     const { rated } = this.state;
-    const newRatedFilms = [...rated];
+    const newRatedFilms = rated ? [...rated] : [];
     newRatedFilms.push({
       id,
       rating,
@@ -124,7 +124,6 @@ export default class App extends Component {
   };
 
   onFilmsLoaded = (body) => {
-    console.log(body);
     this.setState({
       page: body.page,
       totalResults: body.total_results,
@@ -134,7 +133,6 @@ export default class App extends Component {
   };
 
   chooseTab = (ev) => {
-    console.log(ev.target);
     const tab = ev.target.textContent;
     if (tab === 'Search') {
       this.setState({
@@ -142,12 +140,16 @@ export default class App extends Component {
         films: null,
       });
     } else {
-      const { guestSessionId } = this.state;
+      let { guestSessionId, guestSessionExpiresAt } = this.state;
+      if (!guestSessionId) {
+        guestSessionId = localStorage.getItem('guestSessionId');
+        guestSessionExpiresAt = localStorage.getItem('guestSessionExpiresAt');
+        this.setState({ guestSessionId, guestSessionExpiresAt });
+      }
       const ratedFilmsUrl = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
       this.updateCard(ratedFilmsUrl);
     }
     this.setState({ tab });
-    console.log(ev.target.textContent);
   };
 
   updateCard(url) {
@@ -161,21 +163,22 @@ export default class App extends Component {
   }
 
   render() {
-    console.log('render');
     const { films, isLoading, error, totalResults, page, guestSessionId, tab, genres, rated } = this.state;
     const hasData = !(isLoading || error) && films;
     const spinner = isLoading ? <Spin size="large" /> : null;
     const content = hasData ? (
-      <CardList
-        updateRatedFilms={this.updateRatedFilms}
-        genres={genres}
-        rated={rated}
-        films={films}
-        totalResults={totalResults}
-        page={page}
-        onPageNumberChange={this.onSearch}
-        sessionId={guestSessionId}
-      />
+      <ServiceProvider value={genres}>
+        <CardList
+          updateRatedFilms={this.updateRatedFilms}
+          genres={genres}
+          rated={rated}
+          films={films}
+          totalResults={totalResults}
+          page={page}
+          onPageNumberChange={this.onSearch}
+          sessionId={guestSessionId}
+        />
+      </ServiceProvider>
     ) : null;
 
     let searchForm;
