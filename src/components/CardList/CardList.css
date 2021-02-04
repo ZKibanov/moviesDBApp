@@ -2,7 +2,7 @@
   margin: 25% 50%;
 }
 
-@media (min-width: 20px) and (max-width: 504px){
+@media (min-width: 20px) and (max-width: 504px) {
   .card-list {
     width: 387px;
     display: flex;
@@ -29,7 +29,6 @@
     width: 505px;
     margin: 0 auto;
   }
-
 }
 @media (min-width: 1010px) {
   .card-list {

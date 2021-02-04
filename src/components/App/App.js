@@ -5,7 +5,6 @@ import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../MoviedbService';
 import GuestSessionService from '../../services/GuestSessionService/GuestSessionService';
-import { ServiceProvider } from '../../services/ServiceContext/service-context';
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
@@ -167,18 +166,16 @@ export default class App extends Component {
     const hasData = !(isLoading || error) && films;
     const spinner = isLoading ? <Spin size="large" /> : null;
     const content = hasData ? (
-      <ServiceProvider value={genres}>
-        <CardList
-          updateRatedFilms={this.updateRatedFilms}
-          genres={genres}
-          rated={rated}
-          films={films}
-          totalResults={totalResults}
-          page={page}
-          onPageNumberChange={this.onSearch}
-          sessionId={guestSessionId}
-        />
-      </ServiceProvider>
+      <CardList
+        genres={genres}
+        rated={rated}
+        films={films}
+        updateRatedFilms={this.updateRatedFilms}
+        totalResults={totalResults}
+        sessionId={guestSessionId}
+        page={page}
+        onPageNumberChange={this.onSearch}
+      />
     ) : null;
 
     let searchForm;

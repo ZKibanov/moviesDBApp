@@ -13,7 +13,9 @@ export default class GuestSessionService {
         localStorage.setItem('guestSessionExpiresAt', date);
       })
       .catch((err) => {
-        console.error(err.message);
+        /* eslint-disable no-console */
+        console.log(err.message);
+        /* eslint-enable no-console */
       });
   }
 

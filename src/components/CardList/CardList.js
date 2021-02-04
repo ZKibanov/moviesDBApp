@@ -6,7 +6,7 @@ import Card from '../Card';
 import 'antd/dist/antd.css';
 
 function CardList(props) {
-  const { films, totalResults, onPageNumberChange, page, sessionId, genres, rated, updateRatedFilms } = props;
+  const { films, totalResults, onPageNumberChange, page, genres, rated, sessionId, updateRatedFilms } = props;
   const onChange = (newPageNumber) => {
     onPageNumberChange(null, newPageNumber);
   };
