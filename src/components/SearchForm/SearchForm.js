@@ -15,9 +15,14 @@ export default class NewTaskForm extends Component {
 
   constructor(props) {
     super(props);
+    this.textInput = React.createRef();
     this.state = {
       label: '',
     };
+  }
+
+  componentDidMount() {
+    this.textInput.current.focus();
   }
 
   onChange = (ev) => {
@@ -50,6 +55,7 @@ export default class NewTaskForm extends Component {
           placeholder={searchText}
           onChange={this.onLabelChange}
           value={label}
+          ref={this.textInput}
         />
       </form>
     );
