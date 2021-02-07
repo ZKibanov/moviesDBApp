@@ -2,11 +2,12 @@ import React from 'react';
 import propTypes from 'prop-types';
 import { Pagination } from 'antd';
 import { FrownOutlined } from '@ant-design/icons';
+import { ServiceConsumer } from '../../services/ServiceContext';
 import Card from '../Card';
 import 'antd/dist/antd.css';
 
 function CardList(props) {
-  const { films, totalResults, onPageNumberChange, page, genres, rated, sessionId, updateRatedFilms } = props;
+  const { films, totalResults, onPageNumberChange, page, rated, sessionId, updateRatedFilms } = props;
   const onChange = (newPageNumber) => {
     onPageNumberChange(null, newPageNumber);
   };
@@ -19,38 +20,47 @@ function CardList(props) {
       </div>
     );
   }
-  const cardsArray = films.map((item) => {
-    const { id, value, genre_ids: genreIds, ...itemProps } = item;
-    let ratedValue;
-    for (let i = 0; i < rated.length; i += 1) {
-      if (id === rated[i].id) {
-        ratedValue = rated[i].rating;
-      }
-    }
-    const cardGenres = [];
-    genreIds.forEach((itemGenre) => {
-      for (let i = 0; i < genres.length; i += 1) {
-        if (itemGenre === genres[i].id) {
-          cardGenres.push(genres[i].name);
+  const getCards = (genres) => {
+    const cardsArray = films.map((item) => {
+      const { id, value, genre_ids: genreIds, ...itemProps } = item;
+      let ratedValue;
+      for (let i = 0; i < rated.length; i += 1) {
+        if (id === rated[i].id) {
+          ratedValue = rated[i].rating;
         }
       }
+      const cardGenres = [];
+      genreIds.forEach((itemGenre) => {
+        for (let i = 0; i < genres.length; i += 1) {
+          if (itemGenre === genres[i].id) {
+            cardGenres.push(genres[i].name);
+          }
+        }
+      });
+      return (
+        <Card
+          key={id}
+          filmID={id}
+          value={ratedValue}
+          sessionId={sessionId}
+          updateRatedFilms={updateRatedFilms}
+          cardGenres={cardGenres}
+          {...itemProps}
+        />
+      );
     });
-    return (
-      <Card
-        key={id}
-        filmID={id}
-        value={ratedValue}
-        sessionId={sessionId}
-        updateRatedFilms={updateRatedFilms}
-        cardGenres={cardGenres}
-        {...itemProps}
-      />
-    );
-  });
+    return cardsArray;
+  };
 
   return (
-    <fragment>
-      <ul className="card-list">{[cardsArray]}</ul>
+    <>
+      <ServiceConsumer>
+        {(genres) => (
+          <ul className="card-list" gernes={genres}>
+            {getCards(genres)}
+          </ul>
+        )}
+      </ServiceConsumer>
       <Pagination
         onChange={onChange}
         total={totalResults}
@@ -61,7 +71,7 @@ function CardList(props) {
         defaultCurrent={1}
         hideOnSinglePage
       />
-    </fragment>
+    </>
   );
 }
 
@@ -74,7 +84,7 @@ CardList.defaultProps = {
   updateRatedFilms: () => {},
   sessionId: null,
   genres: [],
-  rated: 0,
+  rated: [],
 };
 
 CardList.propTypes = {

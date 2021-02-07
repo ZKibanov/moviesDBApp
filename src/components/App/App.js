@@ -3,25 +3,24 @@ import { Alert, Spin } from 'antd';
 import { VideoCameraFilled, CloseCircleOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
-import MoviedbService from '../MoviedbService';
+import MoviedbService from '../../services/MoviedbService';
 import GuestSessionService from '../../services/GuestSessionService/GuestSessionService';
+import { ServiceProvider } from '../../services/ServiceContext';
+
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
 const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-const guestSessionIDRequest = `https://api.themoviedb.org/3/authentication/guest_session/new?api_key=${key}`;
+const urlBase = 'https://api.themoviedb.org/3';
+const guestSessionIDRequest = `${urlBase}/authentication/guest_session/new?api_key=${key}`;
 
 export default class App extends Component {
-  moviedbService = new MoviedbService();
-
-  sessServ = new GuestSessionService();
-
   constructor() {
     super();
     let guestSessionId;
     let guestSessionExpiresDate;
     if (localStorage.getItem('guestSessionId') === null) {
-      this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
+      GuestSessionService.getGuestSessionInfo(guestSessionIDRequest);
     } else {
       guestSessionId = localStorage.getItem('guestSessionId');
       guestSessionExpiresDate = localStorage.getItem('guestSessionExpiresAt');
@@ -39,8 +38,8 @@ export default class App extends Component {
 
   componentDidMount() {
     const { guestSessionExpiresAt } = this.state;
-    if (!guestSessionExpiresAt && this.sessServ.guestSessionIsValid(guestSessionExpiresAt)) {
-      this.sessServ.getGuestSessionInfo(guestSessionIDRequest);
+    if (!guestSessionExpiresAt && GuestSessionService.guestSessionIsValid(guestSessionExpiresAt)) {
+      GuestSessionService.getGuestSessionInfo(guestSessionIDRequest);
     }
   }
 
@@ -50,8 +49,8 @@ export default class App extends Component {
   }
 
   getGenres() {
-    const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${key}&language=en-US`;
-    this.moviedbService.getResource(genresUrl).then((body) => this.setState({ genres: body.genres }));
+    const genresUrl = `${urlBase}/genre/movie/list?api_key=${key}&language=en-US`;
+    MoviedbService.getResource(genresUrl).then((body) => this.setState({ genres: body.genres }));
   }
 
   onError = (err) => {
@@ -75,9 +74,9 @@ export default class App extends Component {
     }
     let url;
     if (tab === 'Search') {
-      url = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${actualQuery}&page=${pageNumber}`;
+      url = `${urlBase}/search/movie?api_key=${key}&query=${actualQuery}&page=${pageNumber}`;
     } else {
-      url = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
+      url = `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
     }
     this.updateCard(url);
   };
@@ -87,8 +86,8 @@ export default class App extends Component {
       return;
     }
     let pageNumber = 1;
-    const sessionURL = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
-    this.moviedbService.getResource(sessionURL).then((body) => {
+    const sessionURL = `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
+    MoviedbService.getResource(sessionURL).then((body) => {
       if (body.total_pages === 1) {
         this.setState({ rated: body.results });
       } else {
@@ -98,8 +97,8 @@ export default class App extends Component {
         while (i <= body.total_pages) {
           pageNumber = i;
           promiseArray.push(
-            this.moviedbService.getResource(
-              `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`
+            MoviedbService.getResource(
+              `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`
             )
           );
           i += 1;
@@ -146,7 +145,7 @@ export default class App extends Component {
         guestSessionExpiresAt = localStorage.getItem('guestSessionExpiresAt');
         this.setState({ guestSessionId, guestSessionExpiresAt });
       }
-      const ratedFilmsUrl = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
+      const ratedFilmsUrl = `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
       this.updateCard(ratedFilmsUrl);
     }
     this.setState({ tab });
@@ -156,8 +155,7 @@ export default class App extends Component {
     this.setState({
       isLoading: true,
     });
-    this.moviedbService
-      .getResource(url)
+    MoviedbService.getResource(url)
       .then((body) => this.onFilmsLoaded(body))
       .catch((err) => this.onError(err));
   }
@@ -221,7 +219,7 @@ export default class App extends Component {
         <div className="card-list__container">
           <Alert closable="true" showIcon="true" icon={alertIcon} message={alertType[0]} type={alertType[1]} />
           {spinner}
-          {content}
+          <ServiceProvider value={genres}>{content}</ServiceProvider>
         </div>
       </div>
     );

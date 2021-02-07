@@ -1,4 +1,4 @@
-export default class RateFilmService {
+class RateFilmService {
   async rateFilm(rating, filmId, guestSessionID) {
     const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
     const url = `https://api.themoviedb.org/3/movie/${filmId}/rating?api_key=${key}&guest_session_id=${guestSessionID}`;
@@ -19,3 +19,5 @@ export default class RateFilmService {
     return body;
   }
 }
+
+export default new RateFilmService();

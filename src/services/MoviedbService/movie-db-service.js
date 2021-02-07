@@ -1,4 +1,4 @@
-export default class MoviedbService {
+class MoviedbService {
   async getResource(url) {
     const res = await fetch(url);
     if (!res.ok) {
@@ -8,3 +8,5 @@ export default class MoviedbService {
     return body;
   }
 }
+
+export default new MoviedbService();

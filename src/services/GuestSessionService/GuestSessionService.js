@@ -1,11 +1,8 @@
-import MoviedbService from '../../components/MoviedbService';
+import MoviedbService from '../MoviedbService';
 
-export default class GuestSessionService {
-  sessionService = new MoviedbService();
-
+class GuestSessionService {
   getGuestSessionInfo(guestSessionIDRequest) {
-    this.sessionService
-      .getResource(guestSessionIDRequest)
+    MoviedbService.getResource(guestSessionIDRequest)
       .then((body) => {
         const date = this.expireGuestSessionDateParsing(body.expires_at);
         const id = body.guest_session_id;
@@ -38,3 +35,5 @@ export default class GuestSessionService {
     return dateWithOffSet;
   }
 }
+
+export default new GuestSessionService();
