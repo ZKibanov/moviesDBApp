@@ -8,9 +8,6 @@ import 'antd/dist/antd.css';
 
 function CardList(props) {
   const { films, totalResults, onPageNumberChange, page, rated, sessionId, updateRatedFilms } = props;
-  const onChange = (newPageNumber) => {
-    onPageNumberChange(null, newPageNumber);
-  };
 
   if (films.length === 0) {
     return (
@@ -62,7 +59,7 @@ function CardList(props) {
         )}
       </ServiceConsumer>
       <Pagination
-        onChange={onChange}
+        onChange={(newPageNumber) => onPageNumberChange(null, newPageNumber)}
         total={totalResults}
         current={page}
         defaultPageSize={20}

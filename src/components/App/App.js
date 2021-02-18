@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Alert, Spin } from 'antd';
 import { VideoCameraFilled, CloseCircleOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import Navigation from '../Navigation';
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../../services/MoviedbService';
-import GuestSessionService from '../../services/GuestSessionService/GuestSessionService';
 import { ServiceProvider } from '../../services/ServiceContext';
 
 import 'antd/dist/antd.css';
@@ -12,51 +13,32 @@ import 'normalize.css';
 
 const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
 const urlBase = 'https://api.themoviedb.org/3';
-const guestSessionIDRequest = `${urlBase}/authentication/guest_session/new?api_key=${key}`;
 
 export default class App extends Component {
+  static defaultProps = {
+    guestSessionId: null,
+    genres: [],
+  };
+
+  static propTypes = {
+    guestSessionId: PropTypes.string,
+    genres: PropTypes.arrayOf(PropTypes.object),
+  };
+
   constructor() {
     super();
-    let guestSessionId;
-    let guestSessionExpiresDate;
-    if (localStorage.getItem('guestSessionId') === null) {
-      GuestSessionService.getGuestSessionInfo(guestSessionIDRequest);
-    } else {
-      guestSessionId = localStorage.getItem('guestSessionId');
-      guestSessionExpiresDate = localStorage.getItem('guestSessionExpiresAt');
-    }
     this.state = {
-      guestSessionId,
-      guestSessionExpiresAt: guestSessionExpiresDate,
       isLoading: false,
       error: false,
       tab: 'Search',
     };
-    this.getRatedFilms(guestSessionId);
-    this.getGenres();
-  }
-
-  componentDidMount() {
-    const { guestSessionExpiresAt } = this.state;
-    if (!guestSessionExpiresAt && GuestSessionService.guestSessionIsValid(guestSessionExpiresAt)) {
-      GuestSessionService.getGuestSessionInfo(guestSessionIDRequest);
-    }
   }
 
   componentDidCatch() {
-    console.log('Houston, we have a proplem!');
     this.setState({ error: true });
   }
 
-  getGenres() {
-    const genresUrl = `${urlBase}/genre/movie/list?api_key=${key}&language=en-US`;
-    MoviedbService.getResource(genresUrl).then((body) => this.setState({ genres: body.genres }));
-  }
-
-  onError = (err) => {
-    /* eslint no-console: [0, { allow: ["warn", "error"] }] */
-    // custom console
-    console.log(err.message);
+  onError = () => {
     this.setState({
       error: true,
       isLoading: false,
@@ -64,7 +46,8 @@ export default class App extends Component {
   };
 
   onSearch = (text, pageNumber = 1) => {
-    const { query, tab, guestSessionId } = this.state;
+    const guestSessionId = this.props;
+    const { query, tab } = this.state;
     const actualQuery = text || query;
     if (text) {
       this.setState({
@@ -80,37 +63,6 @@ export default class App extends Component {
     }
     this.updateCard(url);
   };
-
-  getRatedFilms(guestSessionId) {
-    if (!guestSessionId) {
-      return;
-    }
-    let pageNumber = 1;
-    const sessionURL = `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`;
-    MoviedbService.getResource(sessionURL).then((body) => {
-      if (body.total_pages === 1) {
-        this.setState({ rated: body.results });
-      } else {
-        console.log(body.total_pages);
-        const promiseArray = [];
-        let i = 1;
-        while (i <= body.total_pages) {
-          pageNumber = i;
-          promiseArray.push(
-            MoviedbService.getResource(
-              `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc&page=${pageNumber}`
-            )
-          );
-          i += 1;
-        }
-        Promise.all(promiseArray).then((arrOfResults) => {
-          const ratedFilmsArrray = [];
-          arrOfResults.forEach((el) => ratedFilmsArrray.push(...el.results));
-          this.setState({ rated: ratedFilmsArrray });
-        });
-      }
-    });
-  }
 
   updateRatedFilms = (id, rating) => {
     const { rated } = this.state;
@@ -133,18 +85,13 @@ export default class App extends Component {
 
   chooseTab = (ev) => {
     const tab = ev.target.textContent;
+    const { guestSessionId } = this.props;
     if (tab === 'Search') {
       this.setState({
         query: null,
         films: null,
       });
     } else {
-      let { guestSessionId, guestSessionExpiresAt } = this.state;
-      if (!guestSessionId) {
-        guestSessionId = localStorage.getItem('guestSessionId');
-        guestSessionExpiresAt = localStorage.getItem('guestSessionExpiresAt');
-        this.setState({ guestSessionId, guestSessionExpiresAt });
-      }
       const ratedFilmsUrl = `${urlBase}/guest_session/${guestSessionId}/rated/movies?api_key=${key}&language=en-US&sort_by=created_at.asc`;
       this.updateCard(ratedFilmsUrl);
     }
@@ -157,38 +104,14 @@ export default class App extends Component {
     });
     MoviedbService.getResource(url)
       .then((body) => this.onFilmsLoaded(body))
-      .catch((err) => this.onError(err));
+      .catch(() => this.onError());
   }
 
   render() {
-    const { films, isLoading, error, totalResults, page, guestSessionId, tab, genres, rated } = this.state;
-    const hasData = !(isLoading || error) && films;
-    const spinner = isLoading ? <Spin size="large" /> : null;
-    const content = hasData ? (
-      <CardList
-        genres={genres}
-        rated={rated}
-        films={films}
-        updateRatedFilms={this.updateRatedFilms}
-        totalResults={totalResults}
-        sessionId={guestSessionId}
-        page={page}
-        onPageNumberChange={this.onSearch}
-      />
-    ) : null;
+    const { films, isLoading, error, totalResults, page, tab, rated } = this.state;
+    const { guestSessionId, genres } = this.props;
 
-    let searchForm;
-    let tabSearchClasses;
-    let tabRatedClasses;
-    if (tab === 'Search') {
-      tabSearchClasses = 'nav-button nav-button__active';
-      tabRatedClasses = 'nav-button';
-      searchForm = <SearchForm onSearch={this.onSearch} />;
-    } else {
-      tabSearchClasses = 'nav-button';
-      tabRatedClasses = 'nav-button nav-button__active';
-      searchForm = null;
-    }
+    const searchForm = tab === 'Search' ? <SearchForm onSearch={this.onSearch} /> : null;
 
     let alertIcon;
     let alertType;
@@ -203,17 +126,26 @@ export default class App extends Component {
       alertType = ['films base loaded successfully', 'success'];
     }
 
+    const hasData = !(isLoading || error) && films;
+    const spinner = isLoading ? <Spin size="large" /> : null;
+
+    const content = hasData ? (
+      <CardList
+        genres={genres}
+        rated={rated}
+        films={films}
+        updateRatedFilms={this.updateRatedFilms}
+        totalResults={totalResults}
+        sessionId={guestSessionId}
+        page={page}
+        onPageNumberChange={this.onSearch}
+      />
+    ) : null;
+
     return (
       <div>
         <header>
-          <nav className="nav">
-            <button type="button" className={tabSearchClasses} onClick={this.chooseTab}>
-              Search
-            </button>
-            <button type="button" className={tabRatedClasses} onClick={this.chooseTab}>
-              Rated
-            </button>
-          </nav>
+          <Navigation chooseTab={this.chooseTab} tab={tab} />
         </header>
         {searchForm}
         <div className="card-list__container">

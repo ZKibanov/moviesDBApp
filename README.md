@@ -1,2 +1,2 @@
 Cсылка на проект:
-https://moviesdatabase-ccrhin40h.vercel.app/
+https://moviesdatabase-llvg7qrjz.vercel.app/

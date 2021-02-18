@@ -1,5 +1,38 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { Spin } from 'antd';
+import SessionService from './api/SessionService';
 import App from './components/App';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+class Page extends Component {
+  state = {
+    isLoading: true,
+  };
+
+  componentDidMount = () => {
+    this.initData();
+  };
+
+  initData() {
+    const promiseArray = [];
+    promiseArray.push(
+      SessionService.getGuestSessionInfo().then((body) => {
+        this.setState({ sessionId: body.guest_session_id });
+      })
+    );
+    promiseArray.push(
+      SessionService.getGenres().then((body) => {
+        this.setState({ genres: body.genres });
+      })
+    );
+    Promise.all(promiseArray).then(this.setState({ isLoading: false }));
+  }
+
+  render() {
+    const { isLoading, sessionId, genres } = this.state;
+    const cont = isLoading ? <Spin /> : <App guestSessionId={sessionId} genres={genres} />;
+    return cont;
+  }
+}
+
+ReactDOM.render(<Page />, document.getElementById('root'));
