@@ -53,7 +53,7 @@ function CardList(props) {
     <>
       <ServiceConsumer>
         {(genres) => (
-          <ul className="card-list" gernes={genres}>
+          <ul className="card-list" genres={genres}>
             {getCards(genres)}
           </ul>
         )}

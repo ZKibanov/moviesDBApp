@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Spin } from 'antd';
 import SessionService from './api/SessionService';
+import { ServiceProvider } from './services/ServiceContext';
 import App from './components/App';
 
 class Page extends Component {
@@ -30,7 +31,13 @@ class Page extends Component {
 
   render() {
     const { isLoading, sessionId, genres } = this.state;
-    const cont = isLoading ? <Spin /> : <App guestSessionId={sessionId} genres={genres} />;
+    const cont = isLoading ? (
+      <Spin />
+    ) : (
+      <ServiceProvider value={genres}>
+        <App guestSessionId={sessionId} />
+      </ServiceProvider>
+    );
     return cont;
   }
 }

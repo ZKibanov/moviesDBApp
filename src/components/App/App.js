@@ -6,7 +6,6 @@ import Navigation from '../Navigation';
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
 import MoviedbService from '../../services/MoviedbService';
-import { ServiceProvider } from '../../services/ServiceContext';
 
 import 'antd/dist/antd.css';
 import 'normalize.css';
@@ -17,12 +16,10 @@ const urlBase = 'https://api.themoviedb.org/3';
 export default class App extends Component {
   static defaultProps = {
     guestSessionId: null,
-    genres: [],
   };
 
   static propTypes = {
     guestSessionId: PropTypes.string,
-    genres: PropTypes.arrayOf(PropTypes.object),
   };
 
   constructor() {
@@ -109,7 +106,7 @@ export default class App extends Component {
 
   render() {
     const { films, isLoading, error, totalResults, page, tab, rated } = this.state;
-    const { guestSessionId, genres } = this.props;
+    const { guestSessionId } = this.props;
 
     const searchForm = tab === 'Search' ? <SearchForm onSearch={this.onSearch} /> : null;
 
@@ -131,7 +128,6 @@ export default class App extends Component {
 
     const content = hasData ? (
       <CardList
-        genres={genres}
         rated={rated}
         films={films}
         updateRatedFilms={this.updateRatedFilms}
@@ -151,7 +147,7 @@ export default class App extends Component {
         <div className="card-list__container">
           <Alert closable="true" showIcon="true" icon={alertIcon} message={alertType[0]} type={alertType[1]} />
           {spinner}
-          <ServiceProvider value={genres}>{content}</ServiceProvider>
+          {content}
         </div>
       </div>
     );
