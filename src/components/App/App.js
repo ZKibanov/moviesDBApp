@@ -1,27 +1,17 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Alert, Spin } from 'antd';
 import { VideoCameraFilled, CloseCircleOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import Navigation from '../Navigation';
 import CardList from '../CardList';
 import SearchForm from '../SearchForm';
+import { key, urlBase } from '../../api/apiVariables';
 import MoviedbService from '../../services/MoviedbService';
-
+import SessionService from '../../api/SessionService';
+import { ServiceProvider } from '../../services/ServiceContext';
 import 'antd/dist/antd.css';
 import 'normalize.css';
 
-const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-const urlBase = 'https://api.themoviedb.org/3';
-
 export default class App extends Component {
-  static defaultProps = {
-    guestSessionId: null,
-  };
-
-  static propTypes = {
-    guestSessionId: PropTypes.string,
-  };
-
   constructor() {
     super();
     this.state = {
@@ -29,6 +19,10 @@ export default class App extends Component {
       error: false,
       tab: 'Search',
     };
+  }
+
+  componentDidMount() {
+    this.initData();
   }
 
   componentDidCatch() {
@@ -43,8 +37,7 @@ export default class App extends Component {
   };
 
   onSearch = (text, pageNumber = 1) => {
-    const guestSessionId = this.props;
-    const { query, tab } = this.state;
+    const { query, tab, guestSessionId } = this.state;
     const actualQuery = text || query;
     if (text) {
       this.setState({
@@ -82,7 +75,7 @@ export default class App extends Component {
 
   chooseTab = (ev) => {
     const tab = ev.target.textContent;
-    const { guestSessionId } = this.props;
+    const { guestSessionId } = this.state;
     if (tab === 'Search') {
       this.setState({
         query: null,
@@ -95,6 +88,18 @@ export default class App extends Component {
     this.setState({ tab });
   };
 
+  initData() {
+    const sessionPromise = SessionService.getGuestSessionInfo().then((body) => {
+      this.setState({ guestSessionId: body.guest_session_id });
+    });
+
+    const genresPromise = SessionService.getGenres().then((body) => {
+      this.setState({ genres: body.genres });
+    });
+    const promiseArray = [sessionPromise, genresPromise];
+    Promise.all(promiseArray).then(this.setState({ isLoading: false }));
+  }
+
   updateCard(url) {
     this.setState({
       isLoading: true,
@@ -105,8 +110,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { films, isLoading, error, totalResults, page, tab, rated } = this.state;
-    const { guestSessionId } = this.props;
+    const { films, isLoading, error, totalResults, page, tab, rated, guestSessionId, genres } = this.state;
 
     const searchForm = tab === 'Search' ? <SearchForm onSearch={this.onSearch} /> : null;
 
@@ -127,15 +131,17 @@ export default class App extends Component {
     const spinner = isLoading ? <Spin size="large" /> : null;
 
     const content = hasData ? (
-      <CardList
-        rated={rated}
-        films={films}
-        updateRatedFilms={this.updateRatedFilms}
-        totalResults={totalResults}
-        sessionId={guestSessionId}
-        page={page}
-        onPageNumberChange={this.onSearch}
-      />
+      <ServiceProvider value={genres}>
+        <CardList
+          rated={rated}
+          films={films}
+          updateRatedFilms={this.updateRatedFilms}
+          totalResults={totalResults}
+          sessionId={guestSessionId}
+          page={page}
+          onPageNumberChange={this.onSearch}
+        />
+      </ServiceProvider>
     ) : null;
 
     return (

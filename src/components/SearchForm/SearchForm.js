@@ -41,7 +41,6 @@ export default class NewTaskForm extends Component {
 
   onSubmit = (ev) => {
     ev.preventDefault();
-    // console.log(ev.target[0].defaultValue)
   };
 
   render() {

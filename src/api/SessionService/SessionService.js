@@ -1,7 +1,6 @@
 import MoviedbService from '../../services/MoviedbService';
+import { urlBase, key } from '../apiVariables';
 
-const key = 'cc1dcf97688dfad4070d8e273bcabc3b';
-const urlBase = 'https://api.themoviedb.org/3';
 const guestSessionIDRequest = `${urlBase}/authentication/guest_session/new?api_key=${key}`;
 const genresUrl = `${urlBase}/genre/movie/list?api_key=${key}&language=en-US`;
 

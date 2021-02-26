@@ -55,17 +55,16 @@ function Card(props) {
   const filmDescripton = stringSizeControl(overview, originalTitle, cardGenres);
 
   function getVoteColor(vote) {
-    let voteColor;
     if (vote < 3) {
-      voteColor = '1';
-    } else if (vote > 7) {
-      voteColor = '4';
-    } else if (vote <= 5 && vote >= 3) {
-      voteColor = '2';
-    } else {
-      voteColor = '3';
+      return '1';
     }
-    return voteColor;
+    if (vote > 7) {
+      return '4';
+    }
+    if (vote <= 5 && vote >= 3) {
+      return '2';
+    }
+    return '3';
   }
 
   const arrayOfCardGenres = cardGenres.map((genre) => (
